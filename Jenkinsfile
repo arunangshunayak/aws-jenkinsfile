@@ -1,18 +1,33 @@
-properties([parameters([string(defaultValue: 'start',description: '', name: 'confirmation', trim: false)])])
-                       
+properties([parameters([choice(choices: ['start', 'stop'], description: 'Select a choice to take action', name: 'choice'), string(defaultValue: '', description: 'Add your Instance Id here', name: 'instaceId', trim: false)])])                
     node {
-            if ( "${confirmation}" == "start" ){
+            if ( "${choice}" == "start" ){
               stage("Start Instance ") {
-                            
-                sh "aws ec2 start-instances --instance-ids i-09d3e733b4d42bcf7"
-                            
-                }
-              }
-            if ( "${confirmation}" == "stop" ){
-            stage("Stop Instance ") {
-                              
-                sh "aws ec2 stop-instances --instance-ids i-09d3e733b4d42bcf7"
+              
+                try{
+               
+                sh "aws ec2 start-instances --instance-ids ${instaceId}"
                 
                 }
+                catch (Exception e){
+                     def stage_name = env.STAGE_NAME
+                     def err_msg =  "Failed at stage ${stage_name} . Aws ec2 failed in Starting of instance ${e}"
+                        echo "${err_msg}"
+                }
+               }
               }
-           }
+            if ( "${choice}" == "stop" ){
+            stage("Stop Instance ") {
+                
+               
+                try{
+                     sh "aws ec2 stop-instances --instance-ids ${instaceId}
+                }
+                catch (Exception e){
+                     def stage_name = env.STAGE_NAME
+                     def err_msg =  "Failed at stage ${stage_name} . Aws ec2 failed in Stoping of instance ${e}"
+                     echo "${err_msg}"
+                }
+              }
+              }
+
+            }
